@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Deformable Neural Radiance Fields creates free-viewpoint portraits (nerfies) from casually captured videos.">
+  <meta name="keywords" content="Nerfies, D-NeRF, NeRF">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VLA-RFT</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/XX.png">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+
+  <style>
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 4rem;
+  }
+
+  a[href^="http"] {
+    color: limegreen;
+    text-decoration: none;
+  }
+  a[href^="http"]:hover {
+    color: green;
+    text-decoration: underline;
+  }
+  </style>
+
+</head>
+<body>
+
+
+
+
+<!------------------------------------------------------------------------------------------>
+<!------------------------------------------------------------------------------------------>
+<!--------------------------------------- Navigation --------------------------------------->
+<!------------------------------------------------------------------------------------------>
+<nav class="navbar is-fixed-top" role="navigation"
+     style="font-family: 'Google Sans', sans-serif; background: white; box-shadow: none;">
+  <div class="container is-max-desktop">
+    <div class="navbar-brand">
+      <span class="navbar-item" style="font-weight: bold; font-size: 20px; cursor: default;">
+        VLA-RFT Project Page
+      </span>
+    </div>
+    <div class="navbar-menu is-active">
+      <div class="navbar-end" style="font-size: 17px; gap: 0px;">
+        <a class="navbar-item" href="#why-vla">Why Propose VLA-RFT?</a>
+        <a class="navbar-item" href="#pipelines">1. Training Paradigm</a>
+        <a class="navbar-item" href="#Results">2. Settings & Results</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+
+
+<!------------------------------------------------------------------------------------------>
+<!------------------------------------------------------------------------------------------>
+<!------------------------------------ Title & Authors ------------------------------------->
+<!------------------------------------------------------------------------------------------>
+<section class="hero">
+  <div class="hero-bg-overlay"></div>
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-2 publication-title"
+              style="font-family: 'Google Sans', sans-serif; margin-top: 1rem;font-size: 3rem;">
+<!--            <span style="display: flex; align-items: center; gap: 0.5rem;">-->
+<!--              <img src="./static/images/facon.png" alt="Logo"-->
+<!--                   style="height: 33px; width: auto; margin-left: 2.7rem;">-->
+              VLA-RFT: Vision-Language-Action Reinforcement Fine-Tuning with
+<!--            </span>-->
+            <div style="margin-top: 0.2rem;">Verified Rewards in World Simulators</div>
+          </h1>
+
+
+
+          <div class="is-size-5 publication-authors"
+               style="font-family: 'Google Sans', sans-serif; line-height: 1.4;">
+            <span class="author-block" style="margin-right: 10px;">Hengtao Li<sup>1,3,7,*,♢</sup></span>
+            <span class="author-block" style="margin-right: 10px;">Pengxiang Ding<sup>1,2,3,*,†</sup></span>
+            <span class="author-block" style="margin-right: 10px;">Runze Suo<sup>1,3,4,*</sup></span>
+            <span class="author-block" style="margin-right: 10px;">Yihao Wang<sup>1,3,6,*</sup></span><br>
+            <span class="author-block" style="margin-right: 10px;">Zirui Ge<sup>1,2,3</sup></span>
+            <span class="author-block" style="margin-right: 10px;">Dongyuan Zang<sup>7</sup></span>
+            <span class="author-block" style="margin-right: 10px;">Kexian Yu<sup>5</sup></span>
+            <span class="author-block" style="margin-right: 10px;">Mingyang Sun<sup>2,3,4</sup></span><br>
+            <span class="author-block" style="margin-right: 10px;">Hongyin Zhang<sup>1,2</sup></span>
+            <span class="author-block" style="margin-right: 10px;">Donglin Wang<sup>1,✉</sup></span>
+            <span class="author-block" style="margin-right: 10px;">Weihua Su<sup>7,✉</sup></span>
+          </div>
+
+          <div class="is-size-6 affiliations"
+               style="font-family: 'Google Sans', sans-serif; line-height: 1.4;">
+            <span class="author-block" style="margin-right: 10px;"><sup>1</sup> Westlake University</span>
+            <span class="author-block" style="margin-right: 10px;"><sup>2</sup> Zhejiang University</span>
+            <span class="author-block" style="margin-right: 10px;"><sup>3</sup> OpenHelix Team</span>
+            <span class="author-block" style="margin-right: 10px;"><sup>4</sup> Fudan University</span><br>
+            <span class="author-block" style="margin-right: 10px;"><sup>5</sup> Zhengzhou University</span>
+            <span class="author-block" style="margin-right: 10px;"><sup>6</sup> BUPT</span>
+            <span class="author-block" style="margin-right: 10px;"><sup>7</sup> Hebei University of Technology</span><br>
+
+            <span class="author-block" style="margin-right: 5px;"><sup>*</sup> Equal Contribution</span>
+            <span class="author-block" style="margin-right: 5px;"><sup>✉</sup> Corresponding Authors</span>
+            <span class="author-block" style="margin-right: 5px;"><sup>†</sup> Project Lead</span><br>
+            <span class="author-block" style="margin-right: 5px;"><sup>♢</sup> Work done during interning at Westlake University</span>
+          </div>
+
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+
+
+              <!-- Paper Link. -->
+              <!----------------->
+              <span class="link-block">
+                <a href="https://vla-adapter.github.io/"
+                   class="external-link button is-normal is-rounded is-dark"
+                   target="_blank" rel="noopener noreferrer">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+
+
+              <!-- ArXiv Link. -->
+              <!----------------->
+              <span class="link-block">
+                <a href="https://vla-adapter.github.io/"
+                   class="external-link button is-normal is-rounded is-dark"
+                   target="_blank" rel="noopener noreferrer">
+                  <span class="icon">
+                        <svg
+                          width="20"
+                          height="20"
+                          fill="none"
+                          viewBox="0 0 17.732 24.269"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M573.549,280.916l2.266,2.738,6.674-7.84c.353-.47.52-.717.353-1.117a1.218,1.218,0,0,0-1.061-.748h0a.953.953,0,0,0-.712.262Z"
+                            transform="translate(-566.984 -271.548)"
+                            fill="#bdb9b4"
+                          />
+                          <path
+                            d="M579.525,282.225l-10.606-10.174a1.413,1.413,0,0,0-.834-.5,1.09,1.09,0,0,0-1.027.66c-.167.4-.047.681.319,1.206l8.44,10.242h0l-6.282,7.716a1.336,1.336,0,0,0-.323,1.3,1.114,1.114,0,0,0,1.04.69A.992.992,0,0,0,571,293l8.519-7.92A1.924,1.924,0,0,0,579.525,282.225Z"
+                            transform="translate(-566.984 -271.548)"
+                            fill="#b31b1b"
+                          />
+                          <path
+                            d="M584.32,293.912l-8.525-10.275,0,0L573.53,280.9l-1.389,1.254a2.063,2.063,0,0,0,0,2.965l10.812,10.419a.925.925,0,0,0,.742.282,1.039,1.039,0,0,0,.953-.667A1.261,1.261,0,0,0,584.32,293.912Z"
+                            transform="translate(-566.984 -271.548)"
+                            fill="#bdb9b4"
+                          />
+                        </svg>
+                      </span>
+                  <span>ArXiv</span>
+                </a>
+              </span>
+
+
+              <!-- Code Link. -->
+              <!---------------->
+              <span class="link-block">
+                <a href="https://vla-adapter.github.io/"
+                   class="external-link button is-normal is-rounded is-dark"
+                   target="_blank" rel="noopener noreferrer">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+
+
+              <!-- Checkpoint Link. -->
+              <!----------------->
+              <span class="link-block">
+                <a href="https://huggingface.co/VLA-Adapter"
+                   class="external-link button is-normal is-rounded is-dark"
+                   target="_blank" rel="noopener noreferrer">
+                  <span class="icon">🤗</span>
+                  <span>Models</span>
+                </a>
+              </span>
+
+
+<!--              &lt;!&ndash; Video Link &ndash;&gt;-->
+<!--              <span class="link-block">-->
+<!--                <a href="https://www.youtube.com/watch?v=MrKrnHhk8IA"-->
+<!--                   class="external-link button is-normal is-rounded is-dark"-->
+<!--                   target="_blank" rel="noopener noreferrer">-->
+<!--                  <span class="icon">-->
+<!--                    <i class="fab fa-youtube"></i>-->
+<!--                  </span>-->
+<!--                  <span>Video</span>-->
+<!--                </a>-->
+<!--              </span>-->
+
+              <!-- View -->
+<!--              <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>-->
+<!--              <span class="link-block" style="margin-top: 4.5px; display: inline-block;">-->
+<!--                <span class="button is-normal is-rounded is-dark" style="cursor: default; pointer-events: none;">-->
+<!--                  View:&nbsp;-->
+<!--                  <span id="busuanzi_value_page_pv">0</span>-->
+<!--                </span>-->
+<!--              </span>-->
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+<!--<section class="section">-->
+<!--  <div class="container is-max-desktop">-->
+<!--    <div class="content has-text-centered">-->
+<!--      <video id="replay-video" controls muted preload playsinline width="75%">-->
+<!--        <source src="./static/videos/replay.mp4" type="video/mp4">-->
+<!--      </video>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</section>-->
+
+
+
+
+<!------------------------------------------------------------------------------------------>
+<!------------------------------------------------------------------------------------------>
+<!-------------------------------- Why Propose VLA-Adapter? -------------------------------->
+<!------------------------------------------------------------------------------------------>
+<section class="section" style="margin-top: 0rem;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 id="why-vla" class="title is-3" style="font-family: 'Google Sans', sans-serif;">Why Propose VLA-RFT?</h2>
+
+
+        <!-- Abstract. -->
+        <!--------------->
+        <div class="content has-text-justified" style="font-family: 'Google Sans', sans-serif; font-size: 1.1rem;">
+          <p style="font-size: 18.5px; margin-top: -0.6rem;">
+            <b>Background.</b> &nbsp; Vision-Language-Action (VLA) models typically rely on imitation learning for training,
+            which performs well in static environments. However, they perform poorly when faced with real-world changes,
+            as slight deviations can cause Policy to gradually deviate from the expert demonstration,
+            leading to error accumulation and affecting robustness. <br>
+          </p>
+
+<!--          <p style="font-size: 18.5px; margin-top: -0.6rem;">-->
+<!--            <b>An Intuitive idea.</b> Can efficiency be improved while maintaining performance simply by reducing the backbone?-->
+<!--            We illustrate this using the recent SOTA <a href="https://arxiv.org/abs/2502.19645"-->
+<!--                                                        target="_blank" rel="noopener" title="OpenVLA-OFT">OpenVLA-OFT</a> method.-->
+<!--            Here, we compare <a href="https://openvla.github.io/"-->
+<!--                                target="_blank" rel="noopener" title="OpenVLA-7B">-->
+<!--            OpenVLA-7B</a>+OFT, <a href="https://arxiv.org/abs/2402.07865"-->
+<!--                                   target="_blank" rel="noopener" title="Prismatic‑VLMs (ICML'24)">-->
+<!--            Prismatic-VLMs </a> (<a href="https://arxiv.org/abs/2307.09288"-->
+<!--                                    target="_blank" rel="noopener" title="LLaMA2-7B">LLaMA2-7B</a>)+OFT, and-->
+<!--            Prismatic-VLMs (<a href="https://arxiv.org/abs/2407.10671"-->
+<!--                               target="_blank" rel="noopener" title="Qwen2.5-0.5B">Qwen2.5-0.5B</a>)+OFT. The results are shown in <a href="#table1">Table 1</a>.-->
+<!--            <b><i>So, an effective paradigm for bridging VL to A is necessary to reduce the backbone scale while maintaining performance!</i></b>-->
+<!--          </p>-->
+        </div>
+
+        <div class="content has-text-justified" style="font-family: 'Google Sans', sans-serif; font-size: 1.1rem;">
+          <p style="font-size: 18.5px; margin-top: 0rem;">
+            <b>In this work.</b> &nbsp; We introduce <b>VLA-RFT</b>, a reinforcement fine-tuning framework that
+leverages a data-driven world model as a controllable simulator. Trained from real
+interaction data, the simulator predicts future visual observations conditioned on
+actions, allowing policy rollouts with dense, trajectory-level rewards derived from
+goal-achieving references. This design delivers an efficient and action-aligned
+learning signal, lowering sample requirements. <br>
+          </p></div>
+                  <div class="container is-max-desktop">
+          <figure id="table1" style="text-align: center; font-size: 17px;">
+            <img src="./static/images/Figure1.png" alt="Framework" style="width: 750px;" />
+            <figcaption><b>Figure 1.</b> The Framework of VLA-RFT.</figcaption>
+          </figure>
+        </div>
+
+        <div class="content has-text-justified" style="font-family: 'Google Sans', sans-serif; font-size: 1.1rem;">
+          <p style="font-size: 18.5px; margin-top: 0.6rem;">
+            <b>Performance.</b> &nbsp; With fewer than 400
+fine-tuning steps, VLA-RFT surpasses strong supervised baselines and achieves
+greater efficiency than simulator-based RL.
+          </p>
+        </div>
+
+
+        <!-- Fig 1. Teaser. -->
+        <!-------------------->
+        <div class="container is-max-desktop">
+          <figure style="text-align: center; font-size: 17px;">
+            <img src="./static/images/Figure2.png" alt="Framework" style="width: 750px;" />
+            <figcaption><b>Figure 2.</b> Performance under General Settings and Perturbation Settings (LIBERO).
+              "Base" is <br/>VLA-Adapter model with the state-of-the-art performance.</figcaption>
+          </figure>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+<!------------------------------------------------------------------------------------------>
+<!------------------------------------------------------------------------------------------>
+<!-------------------------------------- 1. Pipelines -------------------------------------->
+<!------------------------------------------------------------------------------------------>
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 id="pipelines" class="title is-3"
+        style="font-family: 'Google Sans', sans-serif; text-align: center;">1. Training Paradigm</h2>
+
+    <!-- Explanation. -->
+    <!------------------>
+    <p style="font-size: 19px; text-align: justify;">
+      <b>Brief Description.</b> &nbsp; In the pre-training stage, both the world model and
+VLA policy are initialized, where the world model takes a 7-dimensional action input that is consistent in format with the VLA’s action output.
+      In the reinforcement fine-tuning stage, the VLA
+generates action chunks based on an initial frame and language instruction, which are rolled out
+in the world model to predict future states. Verified rewards are then computed from the predicted
+states and used to optimize the VLA via GRPO Optimization.
+    </p>
+
+
+    <!-- Fig 2. -->
+    <!------------>
+    <div class="columns is-centered" style="margin-top: 1rem;">
+      <div class="container is-max-desktop">
+        <figure style="text-align: center; font-size: 17px;">
+          <img src="./static/images/Figure3.png" alt="Framework" style="width: 870px;" />
+          <figcaption><b>Figure 3.</b> The Training Paradigm of VLA-RFT. </figcaption>
+        </figure>
+      </div>
+   </div>
+
+    <p style="font-size: 19px; text-align: justify;">
+      <b>Stage I: WM and Policy Pre-Training.</b> &nbsp; In the first stage, we pretrain the world model on offline
+datasets so that it can capture environment dynamics. In parallel, we pretrain the VLA policy to
+produce stable action chunks, which serve as a reliable initialization for subsequent optimization.
+    </p>
+    <p style="font-size: 19px; text-align: justify;">
+      <b>Stage II: VLA Optimization through WM Interaction.</b> &nbsp; In the second stage, given an initial
+frame and a language instruction, the VLA rolls out n action chunks. The world model then interactively
+      generates trajectories conditioned on these actions and provides verified rewards. Using these
+feedback signals, the VLA is fine-tuned with GRPO to progressively improve policy performance.
+    </p>
+
+  </div>
+</section>
+
+
+
+
+<!------------------------------------------------------------------------------------------>
+<!------------------------------------------------------------------------------------------>
+<!--------------------------------------- 3. Results --------------------------------------->
+<!------------------------------------------------------------------------------------------>
+<section class="section">
+    <!-- Animation. -->
+    <div class="columns is-centered">
+      <div class="container is-max-desktop">
+        <h2 id="Results" class="title is-3"
+            style="font-family: 'Google Sans', sans-serif; text-align: center; margin-top: 1rem;">2. Settings & Results</h2>
+
+
+        <!------------------------------------------------------------------------------------>
+        <!--------------- 3.1 Numerical Comparison on The Different Benchmarks --------------->
+        <!------------------------------------------------------------------------------------>
+        <h2 class="title is-4"
+            style="font-family: 'Google Sans', sans-serif; text-align: center; font-size: 26px;">
+          2.1 Task Settings </h2>
+
+          <!------------------------------------------------------------------------------------>
+          <!------------------------------ 3.1.1 LIBERO Benchmark ------------------------------>
+          <!------------------------------------------------------------------------------------>
+<!--        <h2 class="title is-4"-->
+<!--            style="font-family: 'Google Sans', sans-serif; font-size: 22px;">-->
+<!--          3.1.1  <a href="https://libero-project.github.io/main.html"-->
+<!--         target="_blank" rel="noopener" title="LIBERO">-->
+<!--        LIBERO</a> Benchmark</h2>-->
+
+        <!------ Table 5. ------>
+        <!---------------------->
+        <div class="container is-max-desktop" style="margin-top: 0rem;">
+          <figure style="text-align: center; font-size: 17px;">
+            <img src="./static/images/Figure4.png" alt="Framework" style="width: 900px;" />
+            <figcaption><b>Figure 4.</b> Illustration of Perturbed Task Settings in LIBERO. We consider four perturbation types
+to evaluate out-of-distribution robustness: (<b>Object Position</b>) shifting the initial (<i>x</i>, <i>y</i>) coordinates
+of the manipulated object; (<b>Goal Position</b>) displacing the target object in the (<i>x</i>, <i>y</i>) plane; (<b>Robot
+State</b>) modifying the gripper’s vertical height and horizontal offset; and (<b>Combination</b>) applying all
+perturbations together. Each row shows the original setting (Origin), the perturbed variant (Disturb),
+and a side-by-side comparison (Contrast).
+            </figcaption>
+          </figure>
+        </div>
+
+        <!------------------------------------------------------------------------------------>
+        <!------------------------------ 3.1.2 CALVIN Benchmark ------------------------------>
+        <!------------------------------------------------------------------------------------>
+<!--        <h2 class="title is-4"-->
+<!--            style="font-family: 'Google Sans', sans-serif; margin-top: 2.5rem; font-size: 26px;">-->
+<!--          3.1.2 <a href="http://calvin.cs.uni-freiburg.de/"-->
+<!--         target="_blank" rel="noopener" title="CALVIN">-->
+<!--        CALVIN ABC→D</a> Benchmark</h2>-->
+
+        <h2 class="title is-4"
+            style="font-family: 'Google Sans', sans-serif; margin-top: 2.5rem; text-align: center; font-size: 26px;">
+          2.2 Comparison Results </h2>
+        <!------ Table 6. ------>
+        <!---------------------->
+        <div class="container is-max-desktop" style="margin-top: 0rem;">
+          <figure style="text-align: center; font-size: 17px;">
+            <figcaption><b>Table 1.</b> Performance under perturbation settings. All perturbation magnitudes are in centimeter.
+            </figcaption>
+            <img src="./static/images/Table1.png" alt="Framework" style="width: 870px;" />
+          </figure>
+        </div>
+
+        <div class="container is-max-desktop" style="margin-top: 1rem;">
+          <figure style="text-align: center; font-size: 17px;">
+            <figcaption><b>Table 2.</b> Performance under General Settings of LIBERO. We report SR (%) across the four
+suites (Spatial, Object, Goal, and Long) and their average. VLA-RFT consistently achieves
+the highest scores compared with baseline policies. VLA-Adapter is the recurrence result
+when the Policy is Flow-matching and there is only one image input.
+            </figcaption>
+            <img src="./static/images/Table2.png" alt="Framework" style="width: 870px;" />
+          </figure>
+        </div>
+
+        <!------------------------------------------------------------------------------------>
+        <!---------------------------- 3.1.3 Real-World Benchmark ---------------------------->
+        <!------------------------------------------------------------------------------------>
+<!--        <h2 class="title is-4"-->
+<!--            style="font-family: 'Google Sans', sans-serif; margin-top: 2.5rem; font-size: 22px;">-->
+<!--          3.1.3 Real-World Benchmark</h2>-->
+
+<!--        &lt;!&ndash;&#45;&#45;&#45;&#45; Fig 6. &#45;&#45;&#45;&#45;&ndash;&gt;-->
+<!--        &lt;!&ndash;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&ndash;&gt;-->
+<!--        <div class="container is-max-desktop" style="margin-top: 1.5rem;">-->
+<!--          <figure style="text-align: center; font-size: 19px;">-->
+<!--            <img src="./static/images/Com.png" alt="Framework" style="width: 870px;" />-->
+<!--            <figcaption><b>Figure 6.</b>-->
+<!--            </figcaption>-->
+<!--          </figure>-->
+<!--        </div>-->
+
+      <!------------------------------------------------------------------------------------>
+      <!-------------------------- 3.1.4 Throughput Comparison ----------------------------->
+      <!------------------------------------------------------------------------------------>
+<!--      <h2 class="title is-4"-->
+<!--          style="font-family: 'Google Sans', sans-serif; margin-top: 3rem; font-size: 22px;">-->
+<!--        3.1.4 Throughput Comparison</h2>-->
+
+<!--      &lt;!&ndash;&#45;&#45;&#45;&#45; Tables 7. &#45;&#45;&#45;&#45;&ndash;&gt;-->
+<!--      &lt;!&ndash;-&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&ndash;&gt;-->
+<!--      <div class="container is-max-desktop" style="margin-top: 0rem;">-->
+<!--        <figure style="text-align: center; font-size: 19px;">-->
+<!--          <figcaption><b>Table 7.</b> nference efficiency comparison with OpenVLA and OpenVLA-OFT.-->
+<!--            The action chunk is 8 dimensions, consistent with most VLA. “OpenVLA-OFT (wo <i>Xg</i>, <i>P</i>)”-->
+<!--            is the L1-based version where the input is without <br>the gripper image and proprioceptive-->
+<!--            state. It is the fastest version of OpenVLA-OFT.-->
+<!--          </figcaption>-->
+<!--          <img src="./static/images/ComTroughput.png" alt="Framework" style="width: 800px;" />-->
+<!--        </figure>-->
+<!--      </div>-->
+
+
+
+      <!------------------------------------------------------------------------------------>
+      <!---------------- 3.2 Execution Examples on The Different Benchmarks ---------------->
+      <!------------------------------------------------------------------------------------>
+<!--      <h2 class="title is-4"-->
+<!--          style="font-family: 'Google Sans', sans-serif; text-align: center; margin-top: 4rem; font-size: 26px;">-->
+<!--        2.3 Execution Examples on The Different Benchmarks</h2>-->
+
+      <!------------------------------------------------------->
+      <!---------------- 3.2.1 LIBERO-Spatial  ---------------->
+      <!------------------------------------------------------->
+<!--      <h2 class="title is-4" style="font-family: 'Google Sans', sans-serif; margin-top: 1rem; font-size: 22px;">-->
+<!--        3.2.1 LIBERO-Spatial (Avg. Success Rate: 97.8%)</h2>-->
+      <style>
+        .video-container {display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px;}
+        .video-item {width: 13.3%; display: flex; flex-direction: column; align-items: center; text-align: center;}
+        .video-item video {width: 100%; height: auto;}
+        .caption {margin-top: 5px; font-size: 13px; color: #555;}
+      </style>
+
+<!--      <div class="video-container">-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl1s" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/s1.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the black bowl between the plate and the ramekin and place it on the plate </div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl2s" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/s2.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the black bowl next to the ramekin and place it on the plate</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl3s" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/s3.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the black bowl from table center and place it on the plate</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl4s" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/s4.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the black bowl on the cookie box and place it on the plate</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl5s" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/s5.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the black bowl in the top drawer of the wooden cabinet and place it on the plate</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl6s" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/s6.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the black bowl on the stove and place it on the plate</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl7s" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/s7.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the black bowl next to the plate and place it on the plate</div>-->
+<!--        </div>-->
+<!--      </div>-->
+
+      <!------------------------------------------------------->
+      <!---------------- 3.2.2 LIBERO-Object  ----------------->
+      <!------------------------------------------------------->
+<!--      <h2 class="title is-4" style="font-family: 'Google Sans', sans-serif; margin-top: 1rem; font-size: 22px;">-->
+<!--        3.2.2 LIBERO-Object (Avg. Success Rate: 99.2%)</h2>-->
+<!--      <div class="video-container">-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl1o" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/Long1.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the alphabet soup and place it in the basket</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl2o" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/Long2.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the salad dressing and place it in the basket</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl3o" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/Long3.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the bbq sauce and place it in the basket</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl4o" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/Long4.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the ketchup and place it in the basket </div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl5o" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/Long5.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the tomato sauce and place it in the basket</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl6o" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/Long6.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the milk and place it in the basket  </div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl7o" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/Long7.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Pick up the chocolate pudding and place it in the basket </div>-->
+<!--        </div>-->
+<!--      </div>-->
+
+      <!------------------------------------------------------->
+      <!----------------- 3.2.3 LIBERO-Goal  ------------------>
+      <!------------------------------------------------------->
+<!--      <h2 class="title is-4" style="font-family: 'Google Sans', sans-serif; margin-top: 1rem; font-size: 22px;">-->
+<!--        3.2.3 LIBERO-Goal (Avg. Success Rate: 97.2%)</h2>-->
+<!--      <div class="video-container">-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl1" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/g1.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Open the middle drawer of the cabinet </div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl2" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/g2.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Put the bowl on the stove</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl3" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/g3.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Put the wine bottle on top of the cabinet</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl4" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/g4.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Open the top drawer and put the bowl inside</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl5" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/g5.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Put the bowl on top of the cabinet </div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl6" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/g6.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Push the plate to the front of the stove</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserl7" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/g7.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Put the wine bottle on the rack</div>-->
+<!--        </div>-->
+<!--      </div>-->
+
+      <!------------------------------------------------------->
+      <!----------------- 3.2.4 LIBERO-Long  ------------------>
+      <!------------------------------------------------------->
+<!--      <h2 class="title is-4" style="font-family: 'Google Sans', sans-serif; margin-top: 1rem; font-size: 22px;">-->
+<!--        3.2.4 LIBERO-Long (Avg. Success Rate: 95.0%)</h2>-->
+<!--      <div class="video-container">-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaser2" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/12.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Put both the cream cheese box and the butter in the basket</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaser4" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/14.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Put the black bowl in the bottom drawer of the cabinet and close it</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaser8" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/13.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Turn on the stove and put the moka pot on it</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaser10" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/15.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Put the white mug on the left plate and put the yellow and white mug on the right plate</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaser14" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/19.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Put both moka pots on the stove</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaser18" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/18.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Put both the alphabet soup and the cream cheese box in the basket</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaser20" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/20.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Put the yellow and white mug in the microwave and close it</div>-->
+<!--        </div>-->
+<!--      </div>-->
+
+      <!------------------------------------------------------->
+      <!---------------- 3.2.5 CALVIN ABC->D  ----------------->
+      <!------------------------------------------------------->
+<!--      <h2 class="title is-4" style="font-family: 'Google Sans', sans-serif; margin-top: 1rem; font-size: 22px;">-->
+<!--        3.2.5 CALVIN ABC->D (Avg. length: 4.42)</h2>-->
+<!--      <div class="video-container">-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserc11" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/1.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Open drawer➝Lift pink block table➝Place in slider➝Turn on lightbulb➝Rotate blue block left</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserc51" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/5.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Lift red block table➝Place in drawer➝Rotate blue block right➝Lift pink block slider ➝Stack block</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserc7" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/2.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Move slider right➝Turn on lightbulb➝Push pink block left➝Open drawer➝Push into drawer</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserc9" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/4.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Push pink block right➝Lift red block table➝Stack block➝Move slider left➝Unstack block</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserc111" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/6.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Turn off led➝Close drawer➝Move slider left➝Push pink block right➝Lift red block slider</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserc13" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/8.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Push into drawer➝Close drawer➝Move slider right ➝Lift pink block slider➝Place in slider</div>-->
+<!--        </div>-->
+<!--        <div class="video-item">-->
+<!--          <video id="teaserc19" autoplay muted loop playsinline preload="none" loading="lazy">-->
+<!--            <source src="./static/videos/9.mp4" type="video/mp4">-->
+<!--          </video><div class="caption">Turn off lightbulb➝Move slider left➝Push blue block left➝Lift pink block slider➝ Stack block</div>-->
+<!--        </div>-->
+<!--      </div>-->
+
+      <!------------------------------------------------------->
+      <!----------------- 3.2.6 Real-World  ------------------->
+      <!------------------------------------------------------->
+<!--      <h2 class="title is-4" style="font-family: 'Google Sans', sans-serif; margin-top: 1rem; font-size: 22px;">-->
+<!--        3.2.6 Real-World</h2>-->
+
+
+
+    <!------------------------------------------------------------------------------------>
+    <!------------------------------ 3.3 Keyframe Examples ------------------------------->
+    <!------------------------------------------------------------------------------------>
+<!--    <h2 class="title is-4"-->
+<!--        style="font-family: 'Google Sans', sans-serif; text-align: center; margin-top: 4rem; font-size: 26px;">-->
+<!--      3.3 Keyframe Examples</h2>-->
+
+<!--        <div class="content has-text-justified" style="font-family: 'Google Sans', sans-serif;">-->
+<!--          <p style="font-size: 19px;">-->
+<!--            We give two keyframe examples of the key frames of the robot arm performing a task.-->
+<!--            You can drag the progress bar in the middle bottom to view it.-->
+<!--          </p>-->
+<!--        </div>-->
+<!--        <div class="columns is-vcentered interpolation-panel">-->
+<!--          <div class="column is-3 has-text-centered" style="font-family: 'Google Sans', sans-serif;">-->
+<!--            <img src="./static/images/start1.jpg" class="interpolation-image" alt="Interpolate start reference image."/>-->
+<!--            <p style="font-size: 19px;">Start RGB observation and Proprio. state</p>-->
+<!--          </div>-->
+<!--          <div class="column interpolation-video-column">-->
+<!--            <div id="interpolation-image-wrapper1">Loading...</div>-->
+<!--            <div style="display: flex; justify-content: center;">-->
+<!--              <input class="slider is-large is-info" id="interpolation-slider1"-->
+<!--                     style="width: 300px;" step="1" min="0" max="100" value="0" type="range">-->
+<!--            </div>-->
+<!--          </div>-->
+<!--          <div class="column is-3 has-text-centered" style="font-family: 'Google Sans', sans-serif;">-->
+<!--            <img src="./static/images/end1.jpg" class="interpolation-image" alt="Interpolation end reference image." style="width: 100%; max-width: 600px; height: auto;" />-->
+<!--            <p style="font-size: 19px;">End RGB observation and Proprio. state</p>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        <div class="columns is-vcentered interpolation-panel">-->
+<!--          <div class="column is-3 has-text-centered" style="font-family: 'Google Sans', sans-serif;">-->
+<!--            <img src="./static/images/start.jpg" class="interpolation-image" alt="Interpolate start reference image."/>-->
+<!--            <p style="font-size: 19px;">Start RGB observation and Proprio. state</p>-->
+<!--          </div>-->
+<!--          <div class="column interpolation-video-column">-->
+<!--            <div id="interpolation-image-wrapper">Loading...</div>-->
+<!--            <div style="display: flex; justify-content: center;">-->
+<!--              <input class="slider is-large is-info" id="interpolation-slider" style="width: 300px;" step="1" min="0" max="100" value="0" type="range">-->
+<!--            </div>-->
+<!--          </div>-->
+<!--          <div class="column is-3 has-text-centered" style="font-family: 'Google Sans', sans-serif;">-->
+<!--            <img src="./static/images/end.jpg" class="interpolation-image" alt="Interpolation end reference image."/>-->
+<!--            <p style="font-size: 19px;">End RGB observation and Proprio. state</p>-->
+<!--          </div>-->
+<!--        </div>-->
+
+
+      <!------------------------------------------------------------------------------------>
+      <!------------------------------ 3.4 Frozen VLM Backbone ----------------------------->
+      <!------------------------------------------------------------------------------------>
+      <h2 class="title is-4" id="frozen"
+          style="font-family: 'Google Sans', sans-serif; text-align: center; margin-top: 2rem; font-size: 26px;">
+        2.3 Execution Examples of SFT and RFT in Perturbation Scenes
+      </h2>
+      <style>
+        .section-container {display: flex; align-items: center; gap: 50px;}
+        .text-column {width: 30%; font-size: 19px; line-height: 1.4;}
+        .video-item1 {width: 45%; display: flex; flex-direction: column; align-items: center; text-align: center;}
+      </style>
+
+      <div class="content has-text-justified" style="font-family: 'Google Sans', sans-serif;">
+        <p style="font-size: 19px;">
+          In perturbation scenes, VLA-RFT can sensitively capture the transformation situation, and through interaction with the world model,
+          correct the action and successfully complete the task.
+        </p>
+      </div>
+
+      <div class="section-container">
+        <div class="text-column">
+          <p><b>Instruction:</b><br>
+            Put the black bowl in the bottom drawer of the cabinet and close it
+          </p>
+        </div>
+
+        <div class="video-container">
+          <div class="video-item1">
+<!--            <div class="caption" style="font-size: 19px;">-->
+<!--              <b></b>-->
+<!--            </div>-->
+            <video id="teaserc1" autoplay muted loop playsinline preload="none" loading="lazy">
+              <source src="./static/images/1.mp4" type="video/mp4">
+            </video>
+            <div class="caption" style="font-size: 19px;">
+              <b>SFT: False</b>
+              <span style="color: red; font-weight: bold;">&#10006;</span>
+
+            </div>
+          </div>
+
+          <div class="video-item1">
+<!--            <div class="caption" style="font-size: 19px;">-->
+<!--              <b></b>-->
+<!--            </div>-->
+            <video id="teaserc5" autoplay muted loop playsinline preload="none" loading="lazy">
+              <source src="./static/images/0.mp4" type="video/mp4">
+            </video>
+            <div class="caption" style="font-size: 19px;">
+              <b>VLA-RFT: True</b>
+              <span style="color: green; font-weight: bold;">&#10004;</span>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-4" style="font-family: 'Google Sans', sans-serif;">BibTeX</h2>
+    <pre id="bibtex-code" style="font-family: 'Google Sans', sans-serif; font-size: 18px; padding: 1rem; background: #f5f5f5; border-radius: 5px; white-space: pre;">
+      <code>@article{li2025vlarft,
+      author = {Li, Hengtao and Ding, Pengxiang and Suo, Runze and Wang, Yihao and Ge, Zirui and Zang, Dongyuan and Yu, Kexian and Sun, Mingyang and Zhang, Hongyin and Wang, Donglin and Su, Weihua},
+      title = {VLA-RFT: Vision-Language-Action Reinforcement Fine-Tuning with Verified Rewards in World Simulators},
+      journal = {ArXiv},
+      year = {2025},
+    }</code></pre>
+    <button type="button" id="copy-btn"
+          style="position: absolute; top: 5px; right: 5px; padding: 5px 10px; font-size: 14px; cursor: pointer;">
+    📋 Copy
+  </button>
+  </div>
+  <script>
+(function () {
+  const btn = document.getElementById('copy-btn');
+  const pre = document.querySelector('#bibtex-code code');
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      return true;
+    } catch (e) {
+      return false;
+    } finally {
+      document.body.removeChild(ta);
+    }
+  }
+
+  btn.addEventListener('click', async function () {
+    const code = pre ? pre.innerText : '';
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(code);
+        btn.textContent = '✅ Copied';
+        setTimeout(()=> btn.textContent = '📋 Copy', 1200);
+        return;
+      } catch (e) {}
+    }
+    const ok = fallbackCopy(code);
+    btn.textContent = ok ? '✅ Copied' : '❌ Failed';
+    setTimeout(()=> btn.textContent = '📋 Copy', 1200);
+  });
+})();
+</script>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link"
+         href="./static/videos/nerfies_paper.pdf">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-7">
+        <div class="content">
+          <p>This website is licensed under a <a rel="license"
+                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+            Template from <a
+              href="https://github.com/VLA-Adapter/VLA-Adapter.github.io">VLA-Adapter</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
